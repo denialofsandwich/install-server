@@ -1,0 +1,39 @@
+version: '3.7'
+services:
+  db:
+    image: mariadb:10.5.10
+    restart: unless-stopped
+    volumes:
+      - /opt/compose/volumes/polr/db:/var/lib/mysql
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - MYSQL_ROOT_PASSWORD=${POLR_MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=polr
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=${POLR_MYSQL_USER_PASSWORD}
+  app:
+    image: ajanvier/polr:2.3.0
+    restart: unless-stopped
+    networks:
+      - default
+      - traefik
+    links:
+      - db
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - DB_HOST=db
+      - DB_DATABASE=polr
+      - DB_USERNAME=user
+      - DB_PASSWORD=${POLR_MYSQL_USER_PASSWORD}
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=${POLR_ADMIN_PASSWORD}
+      - APP_ADDRESS=${POLR_DOMAIN}
+      - SETTING_ADV_ANALYTICS=true
+    labels:
+      - traefik.enable=true
+      - "traefik.http.routers.polr.rule=Host(`${POLR_DOMAIN}`)"
+networks:
+  traefik:
+    external: true
+    name: traefik_main

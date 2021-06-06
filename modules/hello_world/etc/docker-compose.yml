@@ -1,0 +1,24 @@
+version: '3.7'
+services:
+  app1:
+    image: containous/whoami:latest
+    restart: unless-stopped
+    networks:
+      - default
+      - traefik
+    labels:
+      - traefik.enable=true
+      - "traefik.http.routers.hello_world1.rule=Host(`${HW1_DOMAIN}`)"
+  app2:
+    image: containous/whoami:latest
+    restart: unless-stopped
+    networks:
+      - default
+      - traefik
+    labels:
+      - traefik.enable=true
+      - "traefik.http.routers.hello_world2.rule=Host(`${HW2_DOMAIN}`)"
+networks:
+  traefik:
+    external: true
+    name: traefik_main

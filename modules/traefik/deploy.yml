@@ -1,0 +1,37 @@
+---
+  - name: "Install Traefik (docker)"
+    hosts: localhost
+    connection: local
+    vars:
+      app_name: "traefik"
+    become: yes
+    tasks:
+    - name: Deploy compose file and configs
+      copy: src=etc/ dest=/etc/docker/compose/{{ app_name }}/
+
+    - name: Create env file for the compose file
+      copy:
+        dest: "/etc/docker/compose/{{ app_name }}/.env"
+        content: "TRAEFIK_LETS_ENCRYPT_EMAIL={{ lookup('env', 'TRAEFIK_LETS_ENCRYPT_EMAIL') }}"
+
+    - name: mkdir volumes
+      file: state=directory path=/opt/compose/volumes/{{ app_name }}/
+
+    - name: Create Let's Encrypt account file
+      file: state=touch mode=0600 path=/opt/compose/volumes/{{ app_name }}/acme.json
+
+    - name: Create network
+      community.docker.docker_network:
+        name: traefik_main
+
+    - name: Enable service and ensure it is not masked
+      ansible.builtin.systemd:
+        name: docker-compose@{{ app_name }}
+        enabled: yes
+        masked: no
+
+    - name: Restart service
+      ansible.builtin.systemd:
+        state: restarted
+        daemon_reload: yes
+        name: docker-compose@{{ app_name }}

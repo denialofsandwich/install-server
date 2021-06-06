@@ -1,0 +1,54 @@
+version: '3.7'
+services:
+  db:
+    image: mariadb:10.5.10
+    restart: unless-stopped
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    volumes:
+      - /opt/compose/volumes/nextcloud/db:/var/lib/mysql
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/mysql_root_pw
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD_FILE=/run/secrets/mysql_user_pw
+    secrets:
+      - mysql_root_pw
+      - mysql_user_pw
+  app:
+    image: nextcloud:21.0.2-apache
+    restart: unless-stopped
+    networks:
+      - default
+      - traefik
+    links:
+      - db
+    volumes:
+      - /opt/compose/volumes/nextcloud/html:/var/www/html
+      - /opt/compose/volumes/nextcloud/data:/var/www/html/data
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD_FILE=/run/secrets/mysql_user_pw
+      - NEXTCLOUD_ADMIN_USER=admin
+      - NEXTCLOUD_ADMIN_PASSWORD_FILE=/run/secrets/nextcloud_admin_pw
+      - NEXTCLOUD_TRUSTED_DOMAINS=${NEXTCLOUD_DOMAIN}
+    secrets:
+      - mysql_user_pw
+      - nextcloud_admin_pw
+    labels:
+      - traefik.enable=true
+      - "traefik.http.routers.nextcloud.rule=Host(`${NEXTCLOUD_DOMAIN}`)"
+networks:
+  traefik:
+    external: true
+    name: traefik_main
+secrets:
+  nextcloud_admin_pw:
+    file: ./secrets/nextcloud_admin_pw.txt
+  mysql_user_pw:
+    file: ./secrets/mysql_user_pw.txt
+  mysql_root_pw:
+    file: ./secrets/mysql_root_pw.txt 

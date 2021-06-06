@@ -1,0 +1,20 @@
+---
+  - name: "Install basics"
+    hosts: localhost
+    connection: local
+    become: yes
+    tasks:
+    - name: Update system
+      apt: upgrade=dist update_cache=yes
+
+    - name: Install screen
+      apt: state=present name=screen
+
+    - name: Install htop
+      apt: state=present name=htop
+
+    - name: Install VIM
+      apt: state=present name=vim
+
+    - name: Install cURL
+      apt: state=present name=curl

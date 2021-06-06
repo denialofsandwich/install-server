@@ -1,0 +1,46 @@
+---
+  - name: "Install Polr (docker)"
+    hosts: localhost
+    connection: local
+    vars:
+      app_name: "polr"
+    become: yes
+    tasks:
+    - name: Deploy compose files
+      copy: src=etc/ dest=/etc/docker/compose/{{ app_name }}/
+
+    - name: Create env file for the compose file
+      copy:
+        dest: "/etc/docker/compose/{{ app_name }}/.env"
+        content: |
+          POLR_DOMAIN={{ lookup('env', 'POLR_DOMAIN') }}
+          POLR_MYSQL_ROOT_PASSWORD={{ lookup('env', 'POLR_MYSQL_ROOT_PASSWORD') }}
+          POLR_MYSQL_USER_PASSWORD={{ lookup('env', 'POLR_MYSQL_USER_PASSWORD') }}
+          POLR_ADMIN_PASSWORD={{ lookup('env', 'POLR_ADMIN_PASSWORD') }}
+
+    - name: mkdir volumes
+      file: state=directory path=/opt/compose/volumes/{{ app_name }}/
+
+    - name: Enable service and ensure it is not masked
+      ansible.builtin.systemd:
+        name: docker-compose@{{ app_name }}
+        enabled: yes
+        masked: no
+
+    - name: Restart service
+      ansible.builtin.systemd:
+        state: restarted
+        daemon_reload: yes
+        name: docker-compose@{{ app_name }}
+
+    - name: Enable service and ensure it is not masked
+      ansible.builtin.systemd:
+        name: docker-compose@{{ app_name }}
+        enabled: yes
+        masked: no
+
+    - name: Restart service
+      ansible.builtin.systemd:
+        state: restarted
+        daemon_reload: yes
+        name: docker-compose@{{ app_name }}

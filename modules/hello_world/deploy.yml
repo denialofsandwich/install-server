@@ -1,0 +1,31 @@
+---
+  - name: "Install Hello World (docker)"
+    hosts: localhost
+    connection: local
+    vars:
+      app_name: "hello_world"
+    become: yes
+    tasks:
+    - name: Deploy compose files
+      copy: src=etc/ dest=/etc/docker/compose/{{ app_name }}/
+
+    - name: Create env file for the compose file
+      copy:
+        dest: "/etc/docker/compose/{{ app_name }}/.env"
+        content: |
+          HW1_DOMAIN={{ lookup('env', 'HW1_DOMAIN') }}
+          HW2_DOMAIN={{ lookup('env', 'HW2_DOMAIN') }}
+          HW3_DOMAIN={{ lookup('env', 'HW3_DOMAIN') }}
+          HW4_DOMAIN={{ lookup('env', 'HW4_DOMAIN') }}
+
+    - name: Enable service and ensure it is not masked
+      ansible.builtin.systemd:
+        name: docker-compose@{{ app_name }}
+        enabled: yes
+        masked: no
+
+    - name: Restart service
+      ansible.builtin.systemd:
+        state: restarted
+        daemon_reload: yes
+        name: docker-compose@{{ app_name }}

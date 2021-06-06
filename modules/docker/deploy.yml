@@ -1,0 +1,26 @@
+---
+  - name: "Install docker"
+    hosts: localhost
+    connection: local
+    become: yes
+    tasks:
+    - name: Install Docker
+      apt: state=present name=docker
+
+    - name: Install Docker Compose
+      get_url:
+        url: https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64
+        dest: /usr/local/bin/docker-compose
+        mode: 0755
+
+    - name: Deploy docker-compose@.service
+      copy: src=docker-compose@.service dest=/etc/systemd/system/
+
+    - name: Reload systemd daemon
+      shell: systemctl daemon-reload
+
+    - name: mkdir /etc/docker/compose/
+      file: state=directory path=/etc/docker/compose/
+
+    - name: mkdir /opt/compose/volumes/
+      file: state=directory path=/opt/compose/volumes/
