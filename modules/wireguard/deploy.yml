@@ -1,0 +1,35 @@
+---
+  - name: "Install Wireguard (docker)"
+    hosts: localhost
+    connection: local
+    vars:
+      app_name: "wireguard"
+    become: yes
+    tasks:
+    - name: Deploy compose files
+      register: restart_service
+      copy: src=etc/ dest=/etc/docker/compose/{{ app_name }}/
+
+    - name: Create env file for the compose file
+      register: restart_service
+      copy:
+        dest: "/etc/docker/compose/{{ app_name }}/.env"
+        content: "WIREGUARD_DOMAIN={{ lookup('env', 'WIREGUARD_DOMAIN') }}"
+
+    - name: mkdir volumes
+      register: restart_service
+      file: state=directory path=/opt/compose/volumes/{{ app_name }}/
+
+    # - name: Enable service and ensure it is not masked
+    #   register: restart_service
+    #   ansible.builtin.systemd:
+    #     name: docker-compose@{{ app_name }}
+    #     enabled: yes
+    #     masked: no
+
+    # - name: Restart service
+    #   when: restart_service.changed
+    #   ansible.builtin.systemd:
+    #     state: restarted
+    #     daemon_reload: yes
+    #     name: docker-compose@{{ app_name }}

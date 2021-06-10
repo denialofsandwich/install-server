@@ -1,0 +1,23 @@
+version: '3.7'
+services:
+  app:
+    image: checkmk/check-mk-raw:2.0.0p5
+    ulimits:
+      nofile: 1024
+    restart: always
+    networks:
+      - default
+      - traefik
+    volumes:
+      - /opt/compose/volumes/checkmk:/omd/sites
+      - /etc/localtime:/etc/localtime:ro
+    tmpfs:
+      - /opt/omd/sites/cmk/tmp:uid=1000,gid=1000
+    labels:
+      - traefik.enable=true
+      - "traefik.http.routers.checkmk.rule=Host(`${CHECKMK_DOMAIN}`)"
+      - traefik.http.services.checkmk.loadbalancer.server.port=5000
+networks:
+  traefik:
+    external: true
+    name: traefik_main

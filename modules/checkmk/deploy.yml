@@ -1,9 +1,9 @@
 ---
-  - name: "Install Hello World (docker)"
+  - name: "Install CheckMK (docker)"
     hosts: localhost
     connection: local
     vars:
-      app_name: "hello_world"
+      app_name: "checkmk"
     become: yes
     tasks:
     - name: Deploy compose files
@@ -14,11 +14,11 @@
       register: restart_service
       copy:
         dest: "/etc/docker/compose/{{ app_name }}/.env"
-        content: |
-          HW1_DOMAIN={{ lookup('env', 'HW1_DOMAIN') }}
-          HW2_DOMAIN={{ lookup('env', 'HW2_DOMAIN') }}
-          HW3_DOMAIN={{ lookup('env', 'HW3_DOMAIN') }}
-          HW4_DOMAIN={{ lookup('env', 'HW4_DOMAIN') }}
+        content: "CHECKMK_DOMAIN={{ lookup('env', 'CHECKMK_DOMAIN') }}"
+
+    - name: mkdir volumes
+      register: restart_service
+      file: state=directory path=/opt/compose/volumes/{{ app_name }}/
 
     - name: Enable service and ensure it is not masked
       register: restart_service

@@ -7,41 +7,50 @@
     become: yes
     tasks:
     - name: Deploy compose files
+      register: restart_service
       copy: src=etc/ dest=/etc/docker/compose/{{ app_name }}/
 
     - name: Create env file for the compose file
+      register: restart_service
       copy:
         dest: "/etc/docker/compose/{{ app_name }}/.env"
         content: "NEXTCLOUD_DOMAIN={{ lookup('env', 'NEXTCLOUD_DOMAIN') }}"
 
     - name: mkdir secrets
+      register: restart_service
       file: state=directory path=/etc/docker/compose/{{ app_name }}/secrets/
 
     - name: Create secret mysql_root_pw
+      register: restart_service
       copy:
         dest: "/etc/docker/compose/{{ app_name }}/secrets/mysql_root_pw.txt"
         content: "{{ lookup('env', 'NEXTCLOUD_MYSQL_ROOT_PASSWORD') }}"
 
     - name: Create secret mysql_user_pw
+      register: restart_service
       copy:
         dest: "/etc/docker/compose/{{ app_name }}/secrets/mysql_user_pw.txt"
         content: "{{ lookup('env', 'NEXTCLOUD_MYSQL_USER_PASSWORD') }}"
 
     - name: Create secret nextcloud_admin_pw
+      register: restart_service
       copy:
         dest: "/etc/docker/compose/{{ app_name }}/secrets/nextcloud_admin_pw.txt"
         content: "{{ lookup('env', 'NEXTCLOUD_ADMIN_PASSWORD') }}"
 
     - name: mkdir volumes
+      register: restart_service
       file: state=directory path=/opt/compose/volumes/{{ app_name }}/
 
     - name: Enable service and ensure it is not masked
+      register: restart_service
       ansible.builtin.systemd:
         name: docker-compose@{{ app_name }}
         enabled: yes
         masked: no
 
     - name: Restart service
+      when: restart_service.changed
       ansible.builtin.systemd:
         state: restarted
         daemon_reload: yes

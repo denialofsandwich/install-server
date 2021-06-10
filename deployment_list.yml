@@ -1,8 +1,10 @@
 ---
-  - import_playbook: modules/basics/deploy.yml
-  - import_playbook: modules/docker/deploy.yml
-  - import_playbook: modules/traefik/deploy.yml
-  - import_playbook: modules/nextcloud/deploy.yml
-  # - import_playbook: modules/pritunl/deploy.yml
-  - import_playbook: modules/polr/deploy.yml
-  - import_playbook: modules/hello_world/deploy.yml
+#  - import_playbook: modules/basics/deploy.yml
+#  - import_playbook: modules/docker/deploy.yml
+#  - import_playbook: modules/traefik/deploy.yml
+#  - import_playbook: modules/nextcloud/deploy.yml
+  - import_playbook: modules/wireguard/deploy.yml
+#  - import_playbook: modules/checkmk/deploy.yml
+#  - import_playbook: modules/polr/deploy.yml
+
+#  - import_playbook: modules/hello_world/deploy.yml

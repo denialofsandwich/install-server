@@ -7,30 +7,37 @@
     become: yes
     tasks:
     - name: Deploy compose file and configs
+      register: restart_service
       copy: src=etc/ dest=/etc/docker/compose/{{ app_name }}/
 
     - name: Create env file for the compose file
+      register: restart_service
       copy:
         dest: "/etc/docker/compose/{{ app_name }}/.env"
         content: "TRAEFIK_LETS_ENCRYPT_EMAIL={{ lookup('env', 'TRAEFIK_LETS_ENCRYPT_EMAIL') }}"
 
     - name: mkdir volumes
+      register: restart_service
       file: state=directory path=/opt/compose/volumes/{{ app_name }}/
 
     - name: Create Let's Encrypt account file
+      register: restart_service
       file: state=touch mode=0600 path=/opt/compose/volumes/{{ app_name }}/acme.json
 
     - name: Create network
+      register: restart_service
       community.docker.docker_network:
         name: traefik_main
 
     - name: Enable service and ensure it is not masked
+      register: restart_service
       ansible.builtin.systemd:
         name: docker-compose@{{ app_name }}
         enabled: yes
         masked: no
 
     - name: Restart service
+      when: restart_service.changed
       ansible.builtin.systemd:
         state: restarted
         daemon_reload: yes
